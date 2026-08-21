@@ -19,16 +19,10 @@ export class ProjectileEntity {
     this.graphics.setDepth(8);
     this.drawLaser();
 
-    // Laser Spark Trail
-    this.sparkTrail = scene.add.particles(this.x, this.y, 'particle_dot', {
-      speed: { min: 10, max: 40 },
-      scale: { start: 0.4, end: 0 },
-      alpha: { start: 0.8, end: 0 },
-      tint: this.colorNum,
-      lifespan: 120,
-      frequency: 20,
-    });
-    this.sparkTrail.setDepth(7);
+    // A continuous emitter for every projectile was the largest client-side
+    // cost during firefights. The bolt graphic already has a glow, so keep
+    // the effect lightweight and avoid creating another renderer per shot.
+    this.sparkTrail = null;
   }
 
   drawLaser() {
@@ -54,7 +48,7 @@ export class ProjectileEntity {
 
     this.graphics.setPosition(this.x, this.y);
     this.graphics.setRotation(this.angle);
-    this.sparkTrail.setPosition(this.x, this.y);
+    if (this.sparkTrail) this.sparkTrail.setPosition(this.x, this.y);
   }
 
   destroy() {

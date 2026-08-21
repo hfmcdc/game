@@ -3,6 +3,14 @@ export const CLIENT_CONFIG = {
   ARENA_HEIGHT: 2000,
   INTERPOLATION_LERP: 0.25, // Positional smoothing factor
   ROTATION_LERP: 0.35,
+  // Input is sent only when it changes, with this interval as a keep-alive.
+  // This avoids emitting an identical packet on every rendered frame.
+  INPUT_SEND_INTERVAL: 50,
+  HUD_UPDATE_INTERVAL: 250,
+  // Interval (ms) at which the mobile fire stick re-sends shoot requests
+  // while held. Slightly above the server's weapon fire rate (180ms) so
+  // every tick lands without spamming useless extra requests.
+  TOUCH_FIRE_INTERVAL: 190,
 };
 
 export const COLORS = {

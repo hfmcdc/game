@@ -397,8 +397,10 @@ export class UIManager {
     // Live Top Leaderboard
     this.renderLiveLeaderboard(allPlayers);
 
-    // Full TAB Scoreboard table
-    this.renderScoreboard(allPlayers);
+    // Keep the hidden scoreboard out of the layout/DOM work on every update.
+    if (this.hud.scoreboardModal.classList.contains('visible')) {
+      this.renderScoreboard(allPlayers);
+    }
   }
 
   renderLiveLeaderboard(players) {

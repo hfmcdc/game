@@ -1,7 +1,9 @@
 export const SERVER_CONFIG = {
   PORT: process.env.PORT || 3000,
   TICK_RATE: 60, // 60 updates/sec physics loop
-  SNAPSHOT_RATE: 30, // 30 updates/sec network broadcast
+  // 20 Hz keeps remote motion smooth with client interpolation while cutting
+  // socket traffic and JSON serialization by a third.
+  SNAPSHOT_RATE: 20,
 };
 
 export const ARENA_CONFIG = {

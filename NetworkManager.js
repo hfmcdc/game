@@ -1,3 +1,5 @@
+import { CLIENT_CONFIG } from '../config.js';
+
 export class NetworkManager {
   constructor() {
     this.socket = null;
@@ -5,6 +7,8 @@ export class NetworkManager {
     this.roomCode = null;
     this.isHost = false;
     this.listeners = new Map();
+    this.lastInput = null;
+    this.lastInputSentAt = 0;
   }
 
   connect() {
@@ -104,7 +108,19 @@ export class NetworkManager {
 
   sendInput(inputData) {
     if (this.socket && this.socket.connected) {
+      const now = performance.now();
+      const changed = !this.lastInput
+        || this.lastInput.up !== inputData.up
+        || this.lastInput.left !== inputData.left
+        || this.lastInput.down !== inputData.down
+        || this.lastInput.right !== inputData.right
+        || Math.abs(this.lastInput.angle - inputData.angle) > 0.025;
+
+      if (!changed && now - this.lastInputSentAt < CLIENT_CONFIG.INPUT_SEND_INTERVAL) return;
+
       this.socket.emit('player_input', inputData);
+      this.lastInput = { ...inputData };
+      this.lastInputSentAt = now;
     }
   }
 

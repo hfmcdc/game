@@ -888,3 +888,202 @@ html, body {
     display: block;
   }
 }
+
+/* ==========================================================================
+   Rotate-Device Overlay
+   Shown (via JS toggling body.is-mobile + body.is-portrait) whenever a
+   mobile device is held in portrait orientation, blocking play until the
+   player rotates to landscape.
+   ========================================================================== */
+.rotate-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--bg-primary);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  padding: 24px;
+}
+
+body.is-mobile.is-portrait .rotate-overlay {
+  display: flex;
+}
+
+.rotate-overlay-icon {
+  font-size: 3.5rem;
+  animation: rotate-hint 1.6s ease-in-out infinite;
+}
+
+@keyframes rotate-hint {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(90deg); }
+}
+
+.rotate-overlay-text {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 10px var(--neon-cyan);
+}
+
+.rotate-overlay-sub {
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Mobile Touch Controls — Virtual Joysticks & Scoreboard Button
+   ========================================================================== */
+.touch-controls-layer {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  touch-action: none;
+}
+
+.touch-controls-layer.active {
+  display: block;
+}
+
+.touch-zone {
+  position: absolute;
+  bottom: 0;
+  width: 50%;
+  height: 68%;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.touch-zone-left {
+  left: 0;
+}
+
+.touch-zone-right {
+  right: 0;
+}
+
+.touch-zone-label {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.joystick-base {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  margin-left: -50px;
+  margin-top: -50px;
+  border-radius: 50%;
+  background: rgba(10, 17, 36, 0.55);
+  border: 2px solid rgba(0, 240, 255, 0.35);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.15) inset;
+  opacity: 0;
+  transition: opacity 0.1s ease;
+  pointer-events: none;
+}
+
+.joystick-base.joystick-visible {
+  opacity: 1;
+}
+
+.joystick-base-fire {
+  border-color: rgba(255, 0, 85, 0.4);
+  box-shadow: 0 0 20px rgba(255, 0, 85, 0.15) inset;
+}
+
+.joystick-nub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 240, 255, 0.55), rgba(0, 240, 255, 0.15));
+  border: 1px solid var(--neon-cyan);
+  box-shadow: 0 0 15px var(--neon-cyan-glow);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.joystick-nub-fire {
+  background: radial-gradient(circle, rgba(255, 0, 85, 0.55), rgba(255, 0, 85, 0.15));
+  border-color: var(--neon-magenta);
+  box-shadow: 0 0 15px var(--neon-magenta-glow);
+}
+
+.touch-icon-btn {
+  position: absolute;
+  top: 90px;
+  right: 16px;
+  width: 42px;
+  height: 42px;
+  border-radius: 6px;
+  background: rgba(10, 17, 36, 0.75);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  color: var(--neon-cyan);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+/* ==========================================================================
+   Mobile In-Game HUD Compaction
+   Keeps the top bar readable and out of the way of the joysticks/thumbs.
+   ========================================================================== */
+body.is-mobile .hud-top-bar {
+  top: 8px;
+  left: 10px;
+  right: 10px;
+}
+
+body.is-mobile .hud-brand {
+  font-size: 1rem;
+  letter-spacing: 2px;
+}
+
+body.is-mobile .hud-mode-tag,
+body.is-mobile .hud-room-info {
+  font-size: 0.7rem;
+}
+
+body.is-mobile .hud-score-display {
+  padding: 4px 14px;
+}
+
+body.is-mobile .hud-score-numbers {
+  font-size: 1.3rem;
+}
+
+body.is-mobile .hud-leaderboard-box {
+  display: none;
+}
+
+body.is-mobile .kill-feed {
+  top: 60px;
+}
+
+body.is-mobile .hud-bottom-bar {
+  bottom: 12px;
+  left: 10px;
+}

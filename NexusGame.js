@@ -33,7 +33,6 @@ export class NexusGame {
       },
       fps: {
         target: 60,
-        forceSetTimeOut: true,
       },
       scene: [this.arenaScene],
     };
