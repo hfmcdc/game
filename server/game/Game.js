@@ -11,7 +11,7 @@ export class Game {
     this.players = new Map(); // id -> Player
     this.projectiles = []; // Active Projectiles
 
-    this.targetScore = MATCH_CONFIG.TARGET_SCORE || 30;
+    this.targetScore = MATCH_CONFIG.TARGET_SCORE || 10;
     this.state = GAME_STATES.LOBBY;
     this.countdownTimer = 0;
     this.winner = null;

@@ -34,7 +34,7 @@ export const MATCH_CONFIG = {
   MIN_PLAYERS_TO_START: 2,
   MAX_PLAYERS_PER_ROOM: 8,
   COUNTDOWN_DURATION: 3, // Seconds
-  TARGET_SCORE: 30, // First to 30 kills wins
+  TARGET_SCORE: 10, // First to 10 kills wins
 };
 
 export const GAME_STATES = {
