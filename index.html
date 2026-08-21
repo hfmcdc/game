@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXUS - 2D Real-Time Multiplayer Arena</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Phaser 3 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+  <!-- Socket.IO Client -->
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <!-- Ambient Cyber Background & Scanlines -->
+  <div class="cyber-grid-bg"></div>
+  <div class="scanlines"></div>
+
+  <!-- Top Right Utility Controls -->
+  <div class="top-controls">
+    <button id="btn-audio-toggle" class="icon-btn" title="Toggle Sound">🔊</button>
+  </div>
+
+  <div id="app">
+    <!-- ================= SCREEN 1: LANDING ================= -->
+    <div id="screen-landing" class="screen active">
+      <div class="cyber-panel">
+        <h1 class="brand-title">NEXUS</h1>
+        <div class="brand-tagline">ENTER THE ARENA</div>
+        <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 24px;">
+          FIRST TO 10 • 2–8 PLAYER DEATHMATCH
+        </p>
+
+        <div class="btn-group">
+          <button id="btn-play-now" class="cyber-btn btn-large">PLAY NOW</button>
+        </div>
+
+        <div class="mobile-advisory">
+          ⚡ DESKTOP RECOMMENDED: Keyboard (WASD) and Mouse precision combat.
+        </div>
+
+        <div class="brand-credit">
+          Built by <span>Mr.Mallu_gg</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SCREEN 2: NAME & ROOM SELECTION ================= -->
+    <div id="screen-name" class="screen">
+      <div class="cyber-panel">
+        <h2 class="section-title">PILOT IDENTIFICATION</h2>
+
+        <div class="cyber-input-group">
+          <label for="input-player-name" class="cyber-label">CALLSIGN / USERNAME</label>
+          <input 
+            type="text" 
+            id="input-player-name" 
+            class="cyber-input" 
+            placeholder="e.g. CyberViper" 
+            maxlength="16"
+            autocomplete="off"
+          />
+        </div>
+
+        <div class="btn-group">
+          <button id="btn-create-room" class="cyber-btn">CREATE ROOM</button>
+          <button id="btn-show-join" class="cyber-btn btn-magenta">JOIN ROOM</button>
+        </div>
+
+        <!-- Join Room Sub-section -->
+        <div id="join-room-container" style="display: none; margin-top: 24px; border-top: 1px solid rgba(0, 240, 255, 0.2); padding-top: 18px;">
+          <div class="cyber-input-group">
+            <label for="input-room-code" class="cyber-label">ENTER 5-DIGIT ROOM CODE</label>
+            <input 
+              type="text" 
+              id="input-room-code" 
+              class="cyber-input" 
+              placeholder="e.g. N7K4P" 
+              maxlength="5" 
+              style="text-transform: uppercase;"
+              autocomplete="off"
+            />
+          </div>
+          <div class="btn-group">
+            <button id="btn-join-room-submit" class="cyber-btn btn-green">CONNECT TO ROOM</button>
+            <button id="btn-join-room-cancel" class="cyber-btn" style="border-color: #555; color: #aaa;">CANCEL</button>
+          </div>
+        </div>
+
+        <div id="name-error-msg" style="color: var(--neon-magenta); margin-top: 14px; font-weight: 600; min-height: 20px;"></div>
+
+        <div class="btn-group" style="margin-top: 18px;">
+          <button id="btn-back-to-landing" class="cyber-btn" style="padding: 8px 18px; font-size: 0.85rem; border-color: #444; color: #888;">
+            ← BACK
+          </button>
+        </div>
+
+        <div class="brand-credit">
+          Built by <span>Mr.Mallu_gg</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SCREEN 3: ROOM LOBBY ================= -->
+    <div id="screen-lobby" class="screen">
+      <div class="cyber-panel" style="max-width: 680px;">
+        <h2 class="section-title" style="margin-bottom: 12px;">DEATHMATCH LOBBY</h2>
+        
+        <div id="lobby-room-badge" class="room-code-badge" title="Click to copy room code">
+          ROOM: <span id="lobby-room-code" class="code">------</span>
+          <span class="copy-hint">(CLICK TO COPY)</span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-family: var(--font-display); font-size: 1rem; color: var(--neon-cyan); letter-spacing: 2px;">
+            PILOTS (<span id="lobby-player-count">0</span>/8)
+          </span>
+          <span id="lobby-status-hint" style="font-size: 0.85rem; color: var(--text-muted);">
+            Min 2 players to launch match
+          </span>
+        </div>
+
+        <ul id="lobby-player-list" class="player-roster">
+          <!-- Populated by UIManager.js -->
+        </ul>
+
+        <div id="lobby-error-msg" style="color: var(--neon-magenta); margin-top: 10px; font-weight: 600; min-height: 20px;"></div>
+
+        <div class="btn-group">
+          <button id="btn-lobby-ready" class="cyber-btn btn-green">READY</button>
+          <button id="btn-lobby-start" class="cyber-btn btn-large" style="display: none;">START MATCH</button>
+          <button id="btn-lobby-leave" class="cyber-btn btn-magenta">LEAVE ROOM</button>
+        </div>
+
+        <div class="brand-credit">
+          Built by <span>Mr.Mallu_gg</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SCREEN 4: GAME SCREEN ================= -->
+    <div id="screen-game" class="screen" style="padding: 0;">
+      <!-- Phaser Canvas Container -->
+      <div id="game-container"></div>
+
+      <!-- In-Game HUD -->
+      <div class="hud-layer">
+        <!-- Top Bar -->
+        <div class="hud-top-bar">
+          <div>
+            <div class="hud-brand">NEXUS</div>
+            <div class="hud-mode-tag">FIRST TO <span id="hud-target-goal">10</span></div>
+            <div id="hud-room-code" class="hud-room-info">ROOM: -----</div>
+          </div>
+
+          <!-- Prominent Local Score Banner -->
+          <div class="hud-score-display">
+            <div class="hud-score-label">YOUR SCORE</div>
+            <div class="hud-score-numbers">
+              <span id="hud-score">0</span> <span class="hud-score-divider">/</span> <span id="hud-target-score">30</span>
+            </div>
+          </div>
+
+          <!-- Live Top Leaderboard Panel -->
+          <div class="hud-leaderboard-box">
+            <div class="hud-leaderboard-title">LEADERBOARD</div>
+            <div id="hud-live-leaderboard" class="hud-live-leaderboard">
+              <!-- Dynamically rendered -->
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); text-align: right; margin-top: 4px;">
+              [TAB] COMBAT LOG
+            </div>
+          </div>
+        </div>
+
+        <!-- Kill Feed -->
+        <div id="kill-feed" class="kill-feed"></div>
+
+        <!-- Center Elimination Popup -->
+        <div id="elimination-popup" class="elimination-popup" style="display: none;">
+          <div class="elim-title">ELIMINATION</div>
+          <div class="elim-points">+1 POINT</div>
+        </div>
+
+        <!-- Respawn Status Banner -->
+        <div id="respawn-banner" class="respawn-banner" style="display: none;">
+          <div class="respawn-title">ELIMINATED</div>
+          <div id="respawn-timer-text" class="respawn-timer">RESPAWNING IN 2s...</div>
+        </div>
+
+        <!-- Bottom Left Health Bar -->
+        <div class="hud-bottom-bar">
+          <div id="hud-player-name" class="hud-player-name">PILOT</div>
+          <div class="health-bar-container">
+            <div id="hud-health-fill" class="health-bar-fill" style="width: 100%;"></div>
+            <div id="hud-health-text" class="health-bar-text">100 / 100 HP</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Countdown Overlay (3, 2, 1, GO!) -->
+      <div id="countdown-overlay" class="countdown-overlay" style="display: none;">
+        <div id="countdown-text" class="countdown-number">3</div>
+      </div>
+
+      <!-- Scoreboard Overlay (TAB) -->
+      <div id="scoreboard-modal" class="scoreboard-overlay">
+        <div class="cyber-panel" style="max-width: 640px;">
+          <h2 class="section-title">DEATHMATCH COMBAT LOG</h2>
+          <table class="cyber-table">
+            <thead>
+              <tr>
+                <th>PILOT</th>
+                <th>KILLS (SCORE)</th>
+                <th>DEATHS</th>
+                <th>K/D</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="scoreboard-table-body">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 10px;">
+            Release [TAB] to close
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SCREEN 5: GAME OVER ================= -->
+    <div id="screen-gameover" class="screen">
+      <div class="cyber-panel" style="max-width: 680px;">
+        <h1 class="brand-title" style="font-size: 3rem;">MATCH OVER</h1>
+        
+        <div class="winner-banner">
+          <div class="winner-label">ARENA CHAMPION (FIRST TO 10)</div>
+          <div id="gameover-winner-name" class="winner-name">CHAMPION</div>
+          <div id="gameover-winner-score" style="color: var(--neon-amber); font-family: var(--font-mono); font-size: 1.1rem; margin-top: 4px;">
+            30 POINTS
+          </div>
+        </div>
+
+        <h3 style="font-family: var(--font-display); letter-spacing: 2px; color: var(--neon-cyan); margin-top: 18px;">
+          FINAL SCOREBOARD
+        </h3>
+        
+        <table class="cyber-table">
+          <thead>
+            <tr>
+              <th>RANK</th>
+              <th>PILOT</th>
+              <th>SCORE (KILLS)</th>
+              <th>DEATHS</th>
+            </tr>
+          </thead>
+          <tbody id="gameover-table-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+
+        <div class="btn-group">
+          <button id="btn-play-again" class="cyber-btn btn-green btn-large">PLAY AGAIN</button>
+          <button id="btn-return-lobby" class="cyber-btn">RETURN TO LOBBY</button>
+          <button id="btn-gameover-menu" class="cyber-btn btn-magenta">MAIN MENU</button>
+        </div>
+
+        <div class="brand-credit">
+          Built by <span>Mr.Mallu_gg</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client Application Entry Point -->
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
