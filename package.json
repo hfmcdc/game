@@ -1,0 +1,26 @@
+{
+  "name": "nexus-arena",
+  "version": "1.0.0",
+  "description": "NEXUS - Real-Time 2D Cyberpunk Multiplayer Arena Game by Mr.Mallu_gg",
+  "main": "server/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node server/server.js"
+  },
+  "keywords": [
+    "game",
+    "multiplayer",
+    "phaser3",
+    "socket.io",
+    "cyberpunk",
+    "arena"
+  ],
+  "author": "Mr.Mallu_gg",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.3"
+  }
+}
