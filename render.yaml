@@ -1,8 +1,12 @@
-# NEXUS - Render Deployment Configuration
-# This file tells Render how to build and start the server
-
-build:
-  command: "npm install"
-
-start:
-  command: "npm start"
+services:
+  - type: web
+    name: nexus-server
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server/server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.0
+      - key: CLIENT_ORIGIN
+        value: "*"
