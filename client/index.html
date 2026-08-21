@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>NEXUS - 2D Real-Time Multiplayer Arena</title>
   <link rel="stylesheet" href="styles.css">
   <!-- Phaser 3 CDN -->
@@ -14,6 +14,13 @@
   <!-- Ambient Cyber Background & Scanlines -->
   <div class="cyber-grid-bg"></div>
   <div class="scanlines"></div>
+
+  <!-- Rotate-Device Overlay (mobile portrait mode) -->
+  <div id="rotate-overlay" class="rotate-overlay">
+    <div class="rotate-overlay-icon">🔄</div>
+    <div class="rotate-overlay-text">ROTATE YOUR DEVICE</div>
+    <div class="rotate-overlay-sub">NEXUS Arena is played in landscape mode</div>
+  </div>
 
   <!-- Top Right Utility Controls -->
   <div class="top-controls">
@@ -27,7 +34,7 @@
         <h1 class="brand-title">NEXUS</h1>
         <div class="brand-tagline">ENTER THE ARENA</div>
         <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 24px;">
-          FIRST TO 30 • 2–8 PLAYER DEATHMATCH
+          FIRST TO 10 • 2–8 PLAYER DEATHMATCH
         </p>
 
         <div class="btn-group">
@@ -35,7 +42,7 @@
         </div>
 
         <div class="mobile-advisory">
-          ⚡ DESKTOP RECOMMENDED: Keyboard (WASD) and Mouse precision combat.
+          📱 MOBILE READY: Touch joystick controls auto-enabled. Rotate to landscape to play.
         </div>
 
         <div class="brand-credit">
@@ -148,7 +155,7 @@
         <div class="hud-top-bar">
           <div>
             <div class="hud-brand">NEXUS</div>
-            <div class="hud-mode-tag">FIRST TO <span id="hud-target-goal">30</span></div>
+            <div class="hud-mode-tag">FIRST TO <span id="hud-target-goal">10</span></div>
             <div id="hud-room-code" class="hud-room-info">ROOM: -----</div>
           </div>
 
@@ -156,7 +163,7 @@
           <div class="hud-score-display">
             <div class="hud-score-label">YOUR SCORE</div>
             <div class="hud-score-numbers">
-              <span id="hud-score">0</span> <span class="hud-score-divider">/</span> <span id="hud-target-score">30</span>
+              <span id="hud-score">0</span> <span class="hud-score-divider">/</span> <span id="hud-target-score">10</span>
             </div>
           </div>
 
@@ -197,6 +204,23 @@
         </div>
       </div>
 
+      <!-- Mobile Touch Controls: Left move stick, Right aim/fire stick -->
+      <div id="touch-controls-layer" class="touch-controls-layer">
+        <div id="touch-move-zone" class="touch-zone touch-zone-left">
+          <div id="move-joystick-base" class="joystick-base">
+            <div id="move-joystick-nub" class="joystick-nub"></div>
+          </div>
+          <div class="touch-zone-label">MOVE</div>
+        </div>
+        <div id="touch-aim-zone" class="touch-zone touch-zone-right">
+          <div id="aim-joystick-base" class="joystick-base joystick-base-fire">
+            <div id="aim-joystick-nub" class="joystick-nub joystick-nub-fire"></div>
+          </div>
+          <div class="touch-zone-label">AIM / FIRE</div>
+        </div>
+        <button id="touch-scoreboard-btn" class="touch-icon-btn" title="Scoreboard">☰</button>
+      </div>
+
       <!-- Countdown Overlay (3, 2, 1, GO!) -->
       <div id="countdown-overlay" class="countdown-overlay" style="display: none;">
         <div id="countdown-text" class="countdown-number">3</div>
@@ -233,10 +257,10 @@
         <h1 class="brand-title" style="font-size: 3rem;">MATCH OVER</h1>
         
         <div class="winner-banner">
-          <div class="winner-label">ARENA CHAMPION (FIRST TO 30)</div>
+          <div class="winner-label">ARENA CHAMPION (FIRST TO 10)</div>
           <div id="gameover-winner-name" class="winner-name">CHAMPION</div>
           <div id="gameover-winner-score" style="color: var(--neon-amber); font-family: var(--font-mono); font-size: 1.1rem; margin-top: 4px;">
-            30 POINTS
+            10 POINTS
           </div>
         </div>
 

@@ -1,6 +1,8 @@
 import { CLIENT_CONFIG, COLORS } from '../../config.js';
 import { PlayerEntity } from '../../entities/PlayerEntity.js';
 import { ProjectileEntity } from '../../entities/ProjectileEntity.js';
+import { TouchControls } from '../../controls/TouchControls.js';
+import { DeviceUtils } from '../../utils/DeviceUtils.js';
 
 export class ArenaScene extends Phaser.Scene {
   constructor() {
@@ -24,6 +26,9 @@ export class ArenaScene extends Phaser.Scene {
     this.crosshair = null;
     this.bgGfx = null;
     this.wallGfx = null;
+
+    this.isMobile = DeviceUtils.isMobile();
+    this.touchControls = null;
   }
 
   init(data) {
@@ -69,15 +74,22 @@ export class ArenaScene extends Phaser.Scene {
       right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
     });
 
-    // 5. Setup Crosshair
+    // 5. Setup Crosshair (desktop mouse-aim only)
     this.createCrosshair();
 
-    // 6. Setup Mouse Click Shooting
-    this.input.on('pointerdown', (pointer) => {
-      if (pointer.leftButtonDown() && this.network) {
-        this.network.sendShoot();
-      }
-    });
+    if (this.isMobile) {
+      // Mobile: hide the mouse-following crosshair (ship rotation shows
+      // facing instead) and drive firing entirely from the aim stick.
+      this.crosshair.setVisible(false);
+      this.touchControls = new TouchControls(this);
+    } else {
+      // 6. Setup Mouse Click Shooting (desktop only)
+      this.input.on('pointerdown', (pointer) => {
+        if (pointer.leftButtonDown() && this.network) {
+          this.network.sendShoot();
+        }
+      });
+    }
 
     // 7. Wire up Network Events
     if (this.network) {
@@ -270,7 +282,7 @@ export class ArenaScene extends Phaser.Scene {
     // Update In-Game HUD
     if (this.localPlayer && this.ui) {
       const localData = snapshot.players.find((p) => p.id === this.localPlayerId);
-      this.ui.updateHUD(localData, snapshot.players, this.network ? this.network.roomCode : '', snapshot.targetScore || 30);
+      this.ui.updateHUD(localData, snapshot.players, this.network ? this.network.roomCode : '', snapshot.targetScore || 10);
     }
   }
 
@@ -411,26 +423,36 @@ export class ArenaScene extends Phaser.Scene {
     if (!this.isSceneReady) return;
     const dt = delta / 1000;
 
-    // Update crosshair position in world space
-    const pointer = this.input.activePointer;
-    const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
-    if (this.crosshair) {
-      this.crosshair.setPosition(worldPoint.x, worldPoint.y);
+    if (!this.isMobile) {
+      // Update crosshair position in world space (desktop mouse-aim only)
+      const pointer = this.input.activePointer;
+      const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+      if (this.crosshair) {
+        this.crosshair.setPosition(worldPoint.x, worldPoint.y);
+      }
     }
 
     // Collect and send inputs
     if (this.localPlayer && this.localPlayer.isAlive && this.network) {
-      const up = this.keys.w.isDown || this.keys.up.isDown;
-      const left = this.keys.a.isDown || this.keys.left.isDown;
-      const down = this.keys.s.isDown || this.keys.down.isDown;
-      const right = this.keys.d.isDown || this.keys.right.isDown;
+      let up, left, down, right, angle;
 
-      const angle = Phaser.Math.Angle.Between(
-        this.localPlayer.x,
-        this.localPlayer.y,
-        worldPoint.x,
-        worldPoint.y
-      );
+      if (this.isMobile && this.touchControls) {
+        const move = this.touchControls.getMovementInput();
+        up = move.up;
+        left = move.left;
+        down = move.down;
+        right = move.right;
+        angle = this.touchControls.getAimAngle(this.localPlayer.angle);
+      } else {
+        up = this.keys.w.isDown || this.keys.up.isDown;
+        left = this.keys.a.isDown || this.keys.left.isDown;
+        down = this.keys.s.isDown || this.keys.down.isDown;
+        right = this.keys.d.isDown || this.keys.right.isDown;
+
+        const pointer = this.input.activePointer;
+        const worldPoint = this.cameras.main.getWorldPoint(pointer.x, pointer.y);
+        angle = Phaser.Math.Angle.Between(this.localPlayer.x, this.localPlayer.y, worldPoint.x, worldPoint.y);
+      }
 
       this.network.sendInput({
         up,
@@ -448,6 +470,10 @@ export class ArenaScene extends Phaser.Scene {
   }
 
   resetArena() {
+    if (this.touchControls) {
+      this.touchControls.hasAimed = false;
+    }
+
     for (const p of this.players.values()) {
       p.destroy();
     }

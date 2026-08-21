@@ -363,7 +363,7 @@ export class UIManager {
     }, 850);
   }
 
-  updateHUD(localPlayer, allPlayers, roomCode, targetScore = 30) {
+  updateHUD(localPlayer, allPlayers, roomCode, targetScore = 10) {
     if (!localPlayer) return;
 
     this.hud.roomCode.textContent = `ROOM: ${roomCode}`;
@@ -456,7 +456,7 @@ export class UIManager {
     this.gameOver.winnerName.style.color = winner ? winner.color : '#fff';
 
     if (this.gameOver.winnerScore) {
-      const score = winner ? winner.score : (data.targetScore || 30);
+      const score = winner ? winner.score : (data.targetScore || 10);
       this.gameOver.winnerScore.textContent = `${score} POINTS (TARGET REACHED)`;
     }
 

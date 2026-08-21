@@ -111,7 +111,7 @@ export class CombatSystem {
               y: player.y,
             });
 
-            // Win condition check: First to target score (30)
+            // Win condition check: First to target score (10)
             if (killer && killer.score >= this.game.targetScore) {
               this.game.endMatch(killer);
             }

@@ -2,6 +2,7 @@ import { SoundManager } from './audio/SoundManager.js';
 import { NetworkManager } from './network/NetworkManager.js';
 import { UIManager } from './ui/UIManager.js';
 import { NexusGame } from './game/NexusGame.js';
+import { DeviceUtils } from './utils/DeviceUtils.js';
 
 class App {
   constructor() {
@@ -19,11 +20,41 @@ class App {
     console.log('             Built by Mr.Mallu_gg             ');
     console.log('==============================================');
 
+    // Detect mobile & set up orientation handling
+    this.setupMobileAdaptation();
+
     // Connect to Socket.IO backend
     this.network.connect();
 
     // Wire up application lifecycle
     this.setupNetworkBinds();
+  }
+
+  setupMobileAdaptation() {
+    const isMobile = DeviceUtils.isMobile();
+    if (isMobile) {
+      document.body.classList.add('is-mobile');
+    }
+
+    const updateOrientationClass = () => {
+      document.body.classList.toggle('is-portrait', DeviceUtils.isPortrait());
+    };
+    updateOrientationClass();
+    window.addEventListener('resize', updateOrientationClass);
+    window.addEventListener('orientationchange', updateOrientationClass);
+
+    // Best-effort landscape lock + fullscreen, triggered from the first
+    // user gesture (PLAY NOW). Falls back gracefully to the CSS
+    // rotate-overlay on browsers that don't support the Orientation API.
+    if (isMobile) {
+      const playBtn = document.getElementById('btn-play-now');
+      if (playBtn) {
+        playBtn.addEventListener('click', async () => {
+          await DeviceUtils.requestFullscreen();
+          await DeviceUtils.requestLandscapeLock();
+        });
+      }
+    }
   }
 
   setupNetworkBinds() {
