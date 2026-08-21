@@ -1,0 +1,8 @@
+# NEXUS - Render Deployment Configuration
+# This file tells Render how to build and start the server
+
+build:
+  command: "npm install"
+
+start:
+  command: "npm start"
